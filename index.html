@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLiving Property Rental DApp</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Ethers.js v6 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --card-border: #30363d;
+            --accent-gold: #f59e0b;
+            --accent-gold-hover: #d97706;
+            --accent-blue: #38bdf8;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --success: #238636;
+            --danger: #da3633;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fbbf24, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover));
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ea043, var(--success));
+            box-shadow: 0 4px 14px rgba(46, 160, 67, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0284c7, var(--accent-blue));
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #b91c1c, var(--danger));
+            box-shadow: 0 4px 14px rgba(218, 54, 51, 0.3);
+        }
+
+        .wallet-badge {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fde68a;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            word-break: break-all;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        input {
+            width: 100%;
+            background-color: #0d1117;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-gold);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+            background: #0d1117;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-item.full-width {
+            grid-column: span 2;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            width: fit-content;
+        }
+
+        .actions-wrapper {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+
+            .form-row,
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-item.full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Header / Navbar -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-building-user"></i> SmartLiving Property
+            </div>
+            <button id="btnConnect" class="btn" onclick="connectWallet()">
+                <i class="fa-solid fa-wallet"></i> Connect Wallet
+            </button>
+            <div id="walletAddress" class="wallet-badge hidden">
+                <i class="fa-solid fa-circle" style="color: var(--success); font-size: 0.6rem;"></i>
+                <span id="walletAddressText"></span>
+            </div>
+        </header>
+
+        <!-- Status Message Box -->
+        <div id="statusMsg" class="status-box hidden">
+            <i class="fa-solid fa-circle-info"></i>
+            <span id="statusText"></span>
+        </div>
+
+        <!-- Section 1: ลงทะเบียนห้องเช่า -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-house-medical" style="color: var(--accent-gold);"></i> 1. ลงทะเบียนห้องเช่า
+                (Landlord)
+            </div>
+            <form onsubmit="handleRegisterProperty(event)">
+                <div class="form-group">
+                    <label>ชื่อห้องพัก / อพาร์ตเมนต์</label>
+                    <input type="text" id="propName" placeholder="เช่น SmartLiving Tower A - Room 402" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ค่าเช่าต่อเดือน (ETH)</label>
+                        <input type="number" step="0.001" id="propRent" placeholder="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>เงินประกัน (ETH)</label>
+                        <input type="number" step="0.001" id="propDeposit" placeholder="0.02" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">
+                    <i class="fa-solid fa-plus-circle"></i> ลงทะเบียนห้องเช่า
+                </button>
+            </form>
+        </div>
+
+        <!-- Section 2: สร้างสัญญาเช่า -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-file-signature" style="color: var(--accent-blue);"></i> 2. สร้างสัญญาเช่า
+                (Landlord)
+            </div>
+            <form onsubmit="handleCreateAgreement(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Property ID</label>
+                        <input type="number" id="agrPropId" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ระยะเวลาเช่า (วัน)</label>
+                        <input type="number" id="agrDuration" value="30" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ผู้เช่า (Tenant Wallet Address)</label>
+                    <input type="text" id="agrTenant" placeholder="0x..." required>
+                </div>
+                <button type="submit" class="btn btn-info" style="width: 100%;">
+                    <i class="fa-solid fa-pen-to-square"></i> ออกสัญญาเช่า
+                </button>
+            </form>
+        </div>
+
+        <!-- Section 3: ตรวจสอบและจัดการสัญญาเช่า -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-sliders" style="color: var(--accent-gold);"></i> 3. ติดตามและจัดการสัญญาเช่า
+                (Agreement Dashboard)
+            </div>
+            <div class="form-row" style="grid-template-columns: 1fr auto; align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>ใส่ Agreement ID ที่ต้องการตรวจสอบ</label>
+                    <input type="number" id="searchAgrId" placeholder="ระบุ Agreement ID">
+                </div>
+                <button onclick="handleFetchAgreement()" class="btn btn-info" style="height: 45px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> ค้นหา
+                </button>
+            </div>
+
+            <!-- Agreement Detail Display -->
+            <div id="agrDetailCard" class="hidden" style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 id="displayPropName" style="color: var(--accent-gold);"></h3>
+                    <span id="displayStatus" class="status-badge"></span>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">ค่าเช่า / เดือน</span>
+                        <span class="detail-value" style="color: var(--accent-blue); font-weight: 600;"><span
+                                id="displayRent"></span> ETH</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">เงินประกันในสัญญา</span>
+                        <span class="detail-value" style="color: var(--success); font-weight: 600;"><span
+                                id="displayDeposit"></span> ETH</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">เงินประกันคงเหลือใน Escrow</span>
+                        <span class="detail-value" style="color: #fbbf24; font-weight: 600;"><span
+                                id="displayBalance"></span> ETH</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">เจ้าของห้อง (Landlord)</span>
+                        <span class="detail-value" id="displayLandlord"></span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">ผู้เช่า (Tenant)</span>
+                        <span class="detail-value" id="displayTenant"></span>
+                    </div>
+                </div>
+
+                <div class="actions-wrapper">
+                    <!-- ปุ่มยืนยันสัญญา (Tenant) -->
+                    <div id="actionConfirm" class="hidden">
+                        <button onclick="handleConfirm()" class="btn btn-info" style="width: 100%;">
+                            <i class="fa-solid fa-check-double"></i> ยืนยันยอมรับเงื่อนไขสัญญาเช่า
+                        </button>
+                    </div>
+
+                    <!-- ปุ่มฝากเงินประกัน (Tenant) -->
+                    <div id="actionDeposit" class="hidden">
+                        <button onclick="handleDeposit()" class="btn btn-success" style="width: 100%;">
+                            <i class="fa-solid fa-vault"></i> โอนเงินประกันเข้า Escrow
+                        </button>
+                    </div>
+
+                    <!-- ฟังก์ชันเมื่อสัญญา Active -->
+                    <div id="actionActive" class="hidden" style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- ชำระค่าเช่า (Tenant) -->
+                        <div id="tenantRentPay">
+                            <button onclick="handlePayRent()" class="btn btn-info" style="width: 100%;">
+                                <i class="fa-solid fa-money-bill-wave"></i> ชำระค่าเช่าประจำงวด (<span
+                                    id="payRentAmount"></span> ETH)
+                            </button>
+                        </div>
+                        <!-- คืนเงินประกันและเลิกสัญญา (Landlord) -->
+                        <div id="landlordRefund" class="form-group"
+                            style="background: #0d1117; padding: 15px; border-radius: 10px; border: 1px solid var(--card-border);">
+                            <label>คืนเงินประกัน (ระบุยอดที่ต้องการหักค่าเสียหาย ETH):</label>
+                            <input type="number" step="0.001" id="deductAmountInput" value="0.0"
+                                style="margin-bottom: 10px;">
+                            <button onclick="handleRefund()" class="btn btn-success" style="width: 100%;">
+                                <i class="fa-solid fa-hand-holding-dollar"></i> ตรวจรับห้อง & คืนเงินประกันตามอนุมัติ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ ใส่ Contract Address ของโจทย์ 4 ตรงนี้
+        const CONTRACT_ADDRESS = "0xB8fC76cDF6E54cD00c59fABC50298399bF5b45aC";
+
+        const CONTRACT_ABI = [
+            "function registerProperty(string _name, uint256 _rentAmount, uint256 _securityDeposit) returns (uint256)",
+            "function createAgreement(uint256 _propertyId, address _tenant, uint256 _durationDays) returns (uint256)",
+            "function confirmAgreement(uint256 _agreementId)",
+            "function depositSecurity(uint256 _agreementId) payable",
+            "function payRent(uint256 _agreementId) payable",
+            "function refundDeposit(uint256 _agreementId, uint256 _deductAmount)",
+            "function raiseDispute(uint256 _agreementId)",
+            "function resolveDispute(uint256 _agreementId, uint256 _deductAmount)",
+            "function properties(uint256) view returns (uint256 id, address landlord, string name, uint256 rentAmount, uint256 securityDeposit, bool isRegistered)",
+            "function agreements(uint256) view returns (uint256 id, uint256 propertyId, address tenant, address landlord, uint256 startTimestamp, uint256 endTimestamp, uint256 rentAmount, uint256 securityDeposit, uint256 depositBalance, bool landlordConfirmed, bool tenantConfirmed, uint8 status)"
+        ];
+
+        const statusNames = ["Created", "Confirmed", "Deposited", "Active", "Disputed", "Terminated", "Refunded"];
+        let provider, signer, contract, userAddress, currentAgr;
+
+        function showStatus(msg) {
+            const box = document.getElementById("statusMsg");
+            document.getElementById("statusText").innerText = msg;
+            box.classList.remove("hidden");
+        }
+
+        async function connectWallet() {
+            if (!window.ethereum) return alert("กรุณาติดตั้ง MetaMask ครับ");
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                userAddress = await signer.getAddress();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                document.getElementById("btnConnect").classList.add("hidden");
+                document.getElementById("walletAddressText").innerText = userAddress.substring(0, 6) + "..." + userAddress.substring(userAddress.length - 4);
+                document.getElementById("walletAddress").classList.remove("hidden");
+                showStatus("เชื่อมต่อ Wallet สำเร็จแล้ว!");
+            } catch (err) {
+                showStatus("เชื่อมต่อไม่สำเร็จ: " + err.message);
+            }
+        }
+
+        // 1. ลงทะเบียนทรัพย์สิน
+        async function handleRegisterProperty(e) {
+            e.preventDefault();
+            if (!contract) return alert("กรุณาเชื่อมต่อ Wallet ก่อนครับ");
+            try {
+                showStatus("กำลังลงทะเบียนห้องเช่า...");
+                const name = document.getElementById("propName").value;
+                const rentWei = ethers.parseEther(document.getElementById("propRent").value);
+                const depositWei = ethers.parseEther(document.getElementById("propDeposit").value);
+
+                const tx = await contract.registerProperty(name, rentWei, depositWei);
+                await tx.wait();
+                showStatus(`ลงทะเบียนห้องเช่าสำเร็จ! (Tx Hash: ${tx.hash})`);
+            } catch (err) {
+                showStatus("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+
+        // 2. สร้างสัญญาเช่า
+        async function handleCreateAgreement(e) {
+            e.preventDefault();
+            if (!contract) return alert("กรุณาเชื่อมต่อ Wallet ก่อนครับ");
+            try {
+                showStatus("กำลังสร้างสัญญาเช่า...");
+                const propId = document.getElementById("agrPropId").value;
+                const duration = document.getElementById("agrDuration").value;
+                const tenant = document.getElementById("agrTenant").value;
+
+                const tx = await contract.createAgreement(propId, tenant, duration);
+                await tx.wait();
+                showStatus(`สร้างสัญญาเช่าสำเร็จ! (Tx Hash: ${tx.hash})`);
+            } catch (err) {
+                showStatus("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+
+        // 3. ดึงข้อมูลและจัดการสัญญา
+        async function handleFetchAgreement() {
+            if (!contract) return alert("กรุณาเชื่อมต่อ Wallet ก่อนครับ");
+            const agrId = document.getElementById("searchAgrId").value;
+            if (agrId === "") return;
+
+            try {
+                const agr = await contract.agreements(agrId);
+                const prop = await contract.properties(agr.propertyId);
+
+                currentAgr = {
+                    id: agrId,
+                    propertyId: agr.propertyId,
+                    propertyName: prop.name,
+                    tenant: agr.tenant,
+                    landlord: agr.landlord,
+                    rentAmountEth: ethers.formatEther(agr.rentAmount),
+                    depositEth: ethers.formatEther(agr.securityDeposit),
+                    balanceEth: ethers.formatEther(agr.depositBalance),
+                    statusStr: statusNames[agr.status]
+                };
+
+                document.getElementById("displayPropName").innerText = currentAgr.propertyName;
+                document.getElementById("displayStatus").innerText = currentAgr.statusStr;
+                document.getElementById("displayRent").innerText = currentAgr.rentAmountEth;
+                document.getElementById("displayDeposit").innerText = currentAgr.depositEth;
+                document.getElementById("displayBalance").innerText = currentAgr.balanceEth;
+                document.getElementById("displayLandlord").innerText = currentAgr.landlord;
+                document.getElementById("displayTenant").innerText = currentAgr.tenant;
+                document.getElementById("payRentAmount").innerText = currentAgr.rentAmountEth;
+
+                // ซ่อน Action ทั้งหมดก่อน
+                document.getElementById("actionConfirm").classList.add("hidden");
+                document.getElementById("actionDeposit").classList.add("hidden");
+                document.getElementById("actionActive").classList.add("hidden");
+
+                const isLandlord = userAddress.toLowerCase() === currentAgr.landlord.toLowerCase();
+                const isTenant = userAddress.toLowerCase() === currentAgr.tenant.toLowerCase();
+
+                if (currentAgr.statusStr === "Created" && isTenant) {
+                    document.getElementById("actionConfirm").classList.remove("hidden");
+                } else if (currentAgr.statusStr === "Confirmed" && isTenant) {
+                    document.getElementById("actionDeposit").classList.remove("hidden");
+                } else if (currentAgr.statusStr === "Active") {
+                    document.getElementById("actionActive").classList.remove("hidden");
+                    document.getElementById("tenantRentPay").style.display = isTenant ? "block" : "none";
+                    document.getElementById("landlordRefund").style.display = isLandlord ? "block" : "none";
+                }
+
+                document.getElementById("agrDetailCard").classList.remove("hidden");
+                showStatus("ดึงข้อมูลสัญญาสำเร็จ");
+            } catch (err) {
+                showStatus("ไม่พบ Agreement ID นี้ หรือเกิดข้อผิดพลาด");
+            }
+        }
+
+        // 4. ยืนยันสัญญา (Confirm)
+        async function handleConfirm() {
+            try {
+                showStatus("กำลังยืนยันรับเงื่อนไขสัญญาเช่า...");
+                const tx = await contract.confirmAgreement(currentAgr.id);
+                await tx.wait();
+                showStatus("ยืนยันสัญญาสำเร็จ!");
+                handleFetchAgreement();
+            } catch (err) {
+                showStatus("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+
+        // 5. ฝากเงินประกัน (Deposit Security)
+        async function handleDeposit() {
+            try {
+                showStatus("กำลังโอนเงินประกันเข้า Escrow...");
+                const tx = await contract.depositSecurity(currentAgr.id, {
+                    value: ethers.parseEther(currentAgr.depositEth)
+                });
+                await tx.wait();
+                showStatus("โอนเงินประกันสำเร็จ! สัญญาเช่ามีผลสมบูรณ์แล้ว");
+                handleFetchAgreement();
+            } catch (err) {
+                showStatus("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+
+        // 6. ชำระค่าเช่า (Pay Rent)
+        async function handlePayRent() {
+            try {
+                showStatus("กำลังชำระค่าเช่า...");
+                const tx = await contract.payRent(currentAgr.id, {
+                    value: ethers.parseEther(currentAgr.rentAmountEth)
+                });
+                await tx.wait();
+                showStatus("ชำระค่าเช่าประจำงวดเรียบร้อย!");
+                handleFetchAgreement();
+            } catch (err) {
+                showStatus("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+
+        // 7. คืนเงินประกัน (Refund Deposit)
+        async function handleRefund() {
+            const deduct = document.getElementById("deductAmountInput").value;
+            try {
+                showStatus("กำลังดำเนินการคืนเงินประกันและสิ้นสุดสัญญา...");
+                const tx = await contract.refundDeposit(currentAgr.id, ethers.parseEther(deduct));
+                await tx.wait();
+                showStatus("ตรวจรับห้องและคืนเงินประกันตามอนุมัติสำเร็จแล้ว!");
+                handleFetchAgreement();
+            } catch (err) {
+                showStatus("เกิดข้อผิดพลาด: " + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
